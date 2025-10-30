@@ -42,6 +42,7 @@ const Hero = () => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] px-4">
+        
       {/* Header & Description */}
       <h2 className="font-bold text-6xl text-center">What should we design</h2>
       <p className="mt-2 text-lg text-gray-500 text-center">
@@ -54,8 +55,7 @@ const Hero = () => {
           onChange={(e) => setUserInput(e.target.value)}
           placeholder="Describe your page design"
           value={userInput}
-          className="w-full h-28 p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-300 resize-none"
-        ></textarea>
+          className="w-full h-28 p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-300 resize-none"></textarea>
         <div className="flex justify-between items-center mt-3">
           <Button variant="ghost" className="cursor-pointer">
             <ImagePlusIcon />
@@ -73,8 +73,7 @@ const Hero = () => {
             onClick={() => setUserInput(item.prompt)}
             key={index}
             variant="outline"
-            className="flex items-center gap-2 cursor-pointer"
-          >
+            className="flex items-center gap-2 cursor-pointer">
             <item.icon className="w-4 h-4" />
             {item.label}
           </Button>
