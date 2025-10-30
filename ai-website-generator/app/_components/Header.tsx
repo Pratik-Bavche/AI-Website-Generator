@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { SignInButton } from '@clerk/nextjs';
 import { ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import path from 'path';
@@ -32,7 +33,9 @@ const Header = () => {
 
         {/* Get Started Button */}
         <div>
+            <SignInButton mode='modal' forceRedirectUrl={'/workspace'}>
             <Button className='cursor-pointer'>Get Started <ArrowRight/></Button>
+            </SignInButton>
         </div>
     </div>
   );

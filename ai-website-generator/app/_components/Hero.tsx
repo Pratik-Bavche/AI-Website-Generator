@@ -1,5 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
+import { SignInButton } from "@clerk/nextjs";
 import {
   ArrowUp,
   HomeIcon,
@@ -60,9 +61,11 @@ const Hero = () => {
           <Button variant="ghost" className="cursor-pointer">
             <ImagePlusIcon />
           </Button>
-          <Button className="cursor-pointer">
+          <SignInButton mode='modal' forceRedirectUrl={'/workspace'}>
+          <Button className="cursor-pointer" disabled={!userInput}>
             <ArrowUp />
           </Button>
+          </SignInButton>
         </div>
       </div>
 
