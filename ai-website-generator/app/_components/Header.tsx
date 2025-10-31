@@ -2,7 +2,6 @@ import { Button } from '@/components/ui/button';
 import { SignInButton } from '@clerk/nextjs';
 import { ArrowRight } from 'lucide-react';
 import Image from 'next/image';
-import path from 'path';
 
 const MenuOptions=[
     {
@@ -20,7 +19,7 @@ const Header = () => {
     <div className='flex items-center justify-between p-4 shadow'>
       {/* Logo */}
       <div className='flex gap-1 items-center'>
-        <Image src={'./logo.svg'} alt='logo' width={35} height={35}/>
+        <Image src={'/logo.svg'} alt='logo' width={35} height={35} style={{height:"auto"}}/>
         <h2 className='font-bold text-xl'>Ai Website Generator</h2>
       </div>
 

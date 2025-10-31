@@ -4,26 +4,42 @@ import { currentUser } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
+export const runtime = "edge";
+
 export async function POST(req: NextRequest) {
-  const user = await currentUser(); 
+  try {
+    const user = await currentUser();
 
-  if (!user) {
-    return NextResponse.json({ error: "No user found" }, { status: 401 });
-  }
+    if (!user) {
+      return NextResponse.json({ error: "No user found" }, { status: 401 });
+    }
 
-  // Check if user already exists
-  const userResult = await db
-    .select()
-    .from(usersTable)
-    .where(eq(usersTable.email, user.primaryEmailAddress?.emailAddress ?? ""));
+    const email = user.primaryEmailAddress?.emailAddress;
+    if (!email) {
+      return NextResponse.json({ error: "User email missing" }, { status: 400 });
+    }
 
-  // If not, insert new user
-  if (userResult.length === 0) {
-    await db.insert(usersTable).values({
+    const existingUser = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.email, email))
+      .limit(1);
+
+    if (existingUser.length > 0) {
+      return NextResponse.json({ user: existingUser[0] });
+    }
+
+    const data = {
       name: user.fullName ?? "NA",
-      email: user.primaryEmailAddress?.emailAddress ?? "",
-    });
-  }
+      email,
+      credits: 2,
+    };
 
-  return NextResponse.json({ user });
+    const [newUser] = await db.insert(usersTable).values(data).returning();
+
+    return NextResponse.json({ user: newUser });
+  } catch (err) {
+    console.error("/api/users error", err);
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+  }
 }
