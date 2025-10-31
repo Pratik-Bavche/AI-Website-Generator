@@ -3,7 +3,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { useUser } from "@clerk/nextjs";
-import { UserDetailContext } from "@/context/userDetailContext";
+import { UserDetailContext } from "@/context/UserDetailContext";
+
 
 const Provider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useUser();

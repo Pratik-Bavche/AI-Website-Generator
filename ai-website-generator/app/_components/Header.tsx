@@ -1,43 +1,60 @@
-import { Button } from '@/components/ui/button';
-import { SignInButton } from '@clerk/nextjs';
-import { ArrowRight } from 'lucide-react';
-import Image from 'next/image';
+"use client";
 
-const MenuOptions=[
-    {
-        name:"Pricing",
-        path:"/pricing"
-    },
-    {
-        name:"Contact Us",
-        path:"/contact-us"
-    }
-]
+import { Button } from "@/components/ui/button";
+import { SignInButton, useUser } from "@clerk/nextjs";
+import { ArrowRight } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+
+const MenuOptions = [
+  { name: "Pricing", path: "/pricing" },
+  { name: "Contact Us", path: "/contact-us" },
+];
 
 const Header = () => {
+  const { user } = useUser();
+
   return (
-    <div className='flex items-center justify-between p-4 shadow'>
+    <div className="flex items-center justify-between p-4 shadow">
       {/* Logo */}
-      <div className='flex gap-1 items-center'>
-        <Image src={'/logo.svg'} alt='logo' width={35} height={35} style={{height:"auto"}}/>
-        <h2 className='font-bold text-xl'>Ai Website Generator</h2>
+      <div className="flex gap-1 items-center">
+        <Image
+          src="/logo.svg"
+          alt="logo"
+          width={35}
+          height={35}
+          style={{ height: "auto" }}
+        />
+        <h2 className="font-bold text-xl">Ai Website Generator</h2>
       </div>
 
       {/* Menu Options */}
-        <div className='flex gap-3'>
-            {MenuOptions.map((menu,index)=>(
-                <Button className='cursor-pointer' variant={"ghost"} key={index}>{menu.name}</Button>
-            ))}
-        </div>
+      <div className="flex gap-3">
+        {MenuOptions.map((menu, index) => (
+          <Button className="cursor-pointer" variant="ghost" key={index}>
+            {menu.name}
+          </Button>
+        ))}
+      </div>
 
-        {/* Get Started Button */}
-        <div>
-            <SignInButton mode='modal' forceRedirectUrl={'/workspace'}>
-            <Button className='cursor-pointer'>Get Started <ArrowRight/></Button>
-            </SignInButton>
-        </div>
+      {/* Get Started Button */}
+      <div>
+        {!user ? (
+          <SignInButton mode="modal" forceRedirectUrl="/workspace">
+            <Button className="cursor-pointer">
+              Get Started <ArrowRight />
+            </Button>
+          </SignInButton>
+        ) : (
+          <Link href="/workspace">
+            <Button className="cursor-pointer">
+              Get Started <ArrowRight />
+            </Button>
+          </Link>
+        )}
+      </div>
     </div>
   );
-}
+};
 
 export default Header;
