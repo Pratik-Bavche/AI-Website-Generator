@@ -4,28 +4,42 @@ import { currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req:NextRequest) {
-    const {projectId,frameId,messages}=await req.json();
-    const user=await currentUser();
+    try {
+        const {projectId,frameId,messages}=await req.json();
+        const user=await currentUser();
 
-    //create project
-    const projectResult=await db.insert(projectTable).values({
-        projectId:projectId,
-        createdBy:user?.primaryEmailAddress?.emailAddress
-    })
+        if (!user) {
+            return NextResponse.json({ error: "No user found" }, { status: 401 });
+        }
 
-    //create frame
-    const frameResult=await db.insert(frameTable).values({
-        frameId:frameId,
-        projectId:projectId
-    })
+        if (!projectId || !frameId || !messages) {
+            return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+        }
 
-    //create user message
-    const chatResult=await db.insert(chatTable).values({
-        chatMessage:messages,
-        createdBy:user?.primaryEmailAddress?.emailAddress
-    })
+        //create project
+        const projectResult=await db.insert(projectTable).values({
+            projectId:projectId,
+            createdBy:user.primaryEmailAddress?.emailAddress
+        })
 
-    return NextResponse.json({
-        projectId,frameId,messages
-    })
+        //create frame
+        const frameResult=await db.insert(frameTable).values({
+            frameId:frameId,
+            projectId:projectId
+        })
+
+        //create user message
+        const chatResult=await db.insert(chatTable).values({
+            chatMessage:messages,
+            frameId:frameId,
+            createdBy:user.primaryEmailAddress?.emailAddress
+        })
+
+        return NextResponse.json({
+            projectId,frameId,messages
+        })
+    } catch (error) {
+        console.error("Error creating project:", error);
+        return NextResponse.json({ error: "Failed to create project" }, { status: 500 });
+    }
 }

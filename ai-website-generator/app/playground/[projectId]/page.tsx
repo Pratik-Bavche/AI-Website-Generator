@@ -38,7 +38,27 @@ const Playground = () => {
     setFrameDetail(result.data);
   };
 
-  const sendMessage = (userInput: string) => {};
+  const sendMessage = async (userInput: string) => {
+    if (!frameId || !userInput.trim()) return;
+    
+    const newMessage = {
+      role: "user",
+      content: userInput,
+    };
+
+    try {
+      // Save message to database
+      await axios.post("/api/frames", {
+        frameId: frameId,
+        messages: newMessage,
+      });
+
+      // Refresh frame details to get updated messages
+      await GetFrameDetails();
+    } catch (error) {
+      console.error("Error sending message:", error);
+    }
+  };
 
   return (
     <div>
