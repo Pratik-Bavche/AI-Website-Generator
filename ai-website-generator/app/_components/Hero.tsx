@@ -1,6 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { SignInButton } from "@clerk/nextjs";
+import { SignInButton, useUser } from "@clerk/nextjs";
 import axios from "axios";
 import {
   ArrowUp,
@@ -47,6 +47,7 @@ const Hero = () => {
   const [userInput, setUserInput] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { isSignedIn } = useUser();
 
   const CreateNewProject = async () => {
     setLoading(true);
@@ -95,7 +96,7 @@ const Hero = () => {
           <Button variant="ghost" className="cursor-pointer">
             <ImagePlusIcon />
           </Button>
-          <SignInButton mode="modal" forceRedirectUrl={"/workspace"}>
+          {isSignedIn ? (
             <Button
               className="cursor-pointer"
               disabled={!userInput || loading}
@@ -103,7 +104,16 @@ const Hero = () => {
             >
               {loading ? <Loader className="animate-spin" /> : <ArrowUp />}
             </Button>
-          </SignInButton>
+          ) : (
+            <SignInButton mode="modal" forceRedirectUrl={"/workspace"}>
+              <Button
+                className="cursor-pointer"
+                disabled={!userInput || loading}
+              >
+                <ArrowUp />
+              </Button>
+            </SignInButton>
+          )}
         </div>
       </div>
 
