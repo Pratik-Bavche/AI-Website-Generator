@@ -8,13 +8,15 @@ const WorkspaceLayout = ({
 }: Readonly<{ children: React.ReactNode }>) => {
   return (
     <SidebarProvider>
-      <AppSidebar/>
-        <div className='w-full'>
-          <AppHeader/>
-        {children}
+      <div className="flex w-full">
+        <AppSidebar />
+        <div className="flex-1">
+          <AppHeader />
+          {children}
         </div>
+      </div>
     </SidebarProvider>
   );
-}
+};
 
 export default WorkspaceLayout;

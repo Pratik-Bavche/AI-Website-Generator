@@ -15,7 +15,7 @@ const PlaygroundHeader = () => {
         />
         <h2 className="font-bold text-xl">AI Website Generator</h2>
       </div>
-      <Button>Save</Button>
+      <Button className='cursor-pointer'>Save</Button>
     </div>
   );
 };
