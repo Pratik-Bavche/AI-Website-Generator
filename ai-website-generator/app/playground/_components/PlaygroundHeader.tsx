@@ -5,17 +5,18 @@ import React from 'react';
 const PlaygroundHeader = () => {
   return (
     <div className="flex justify-between p-4 shadow">
-      <div className="flex gap-1 items-center">
+      <div className="flex gap-2 items-center">
         <Image
           src="/logo.svg"
-          alt="logo"
+          alt="AI Website Generator Logo"
           width={35}
           height={35}
-          style={{ height: "auto" }}
+          style={{ width: 'auto', height: 'auto' }}
+          priority
         />
         <h2 className="font-bold text-xl">AI Website Generator</h2>
       </div>
-      <Button className='cursor-pointer'>Save</Button>
+      <Button className="cursor-pointer">Save</Button>
     </div>
   );
 };
