@@ -1,32 +1,8 @@
-import React, { useEffect, useRef, useState } from "react";
-import WebPageTools from "./WebPageTools";
+import { Button } from '@/components/ui/button';
+import { Code2Icon, Download, Monitor,SquareArrowOutUpRight, TabletSmartphone } from 'lucide-react';
+import React from 'react';
 
-type Props = {
-  generatedCode: string;
-};
-
-const WebsiteDesign = ({ generatedCode }: Props) => {
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [selectedScreenSize,setSelectedScreenSize]=useState('web')
-  const cleanedCode = generatedCode.replace(/```html|```/g, "").trim();
-  const fixDuplicateIds = (html: string) => {
-    const idRegex = /id="([^"]+)"/g;
-    const idMap = new Map<string, number>();
-    return html.replace(idRegex, (match, id) => {
-      const count = idMap.get(id) || 0;
-      idMap.set(id, count + 1);
-      return count === 0 ? match : `id="${id}-${count}"`;
-    });
-  };
-
-  useEffect(() => {
-    if (!iframeRef.current) return;
-    const doc = iframeRef.current.contentDocument;
-    if (!doc) return;
-
-    doc.open();
-    doc.write(`
-      <!DOCTYPE html>
+const HTML_CODE=`<!DOCTYPE html>
       <html lang="en">
       <head>
         <meta charset="UTF-8" />
@@ -66,38 +42,39 @@ const WebsiteDesign = ({ generatedCode }: Props) => {
         <script src="https://unpkg.com/@popperjs/core@2"></script>
         <script src="https://unpkg.com/tippy.js@6"></script>
       </head>
-      <body id="root"></body>
-      </html>
-    `);
-    doc.close();
-  }, []);
+      <body id="root">
+        {code}
+      </body>
+      </html>`
 
-  useEffect(() => {
-    if (!iframeRef.current) return;
-    const doc = iframeRef.current.contentDocument;
-    if (!doc) return;
-    const root = doc.getElementById("root");
+const WebPageTools = ({selectedScreenSize,setSelectedScreenSize,generatedCode}:any) => {
 
-    if (root) {
-      const fixedHTML = fixDuplicateIds(cleanedCode);
-      root.innerHTML = fixedHTML || "";
+    const ViewInNewTab=()=>{
+            if(!generatedCode) return;
+
+            const cleanCode=(HTML_CODE.replace('{code}',generatedCode)||'').replaceAll("```html",'').replace('```','').replace('html','')
+            const blob=new Blob([cleanCode],{type:'text/html'});
+            const url=URL.createObjectURL(blob);
+
+            window.open(url,"_blank")
     }
-  }, [cleanedCode]);
 
   return (
-    <div className="p-5 w-full overflow-hidden flex items-center flex-col">
-      <iframe
-        ref={iframeRef}
-        className={`${selectedScreenSize=='web'?'w-full':'w-130'} h-[78vh] border rounded bg-white`}
-        sandbox="allow-scripts allow-same-origin"
-      />
-      <WebPageTools selectedScreenSize={selectedScreenSize} 
-      setSelectedScreenSize={(v:string)=>setSelectedScreenSize(v)}
-      generatedCode={generatedCode}
-      />
-    </div>
-  
-  );
-};
+    <div className='p-2 shadow rounded-xl w-full flex items-center justify-between'>
+      <div className='flex gap-2'>
+        <Button variant={'ghost'} className={`${selectedScreenSize=='web'?'border border-primary':null} cursor-pointer`} onClick={()=>setSelectedScreenSize('web')}><Monitor/></Button>
+        <Button variant={'ghost'} className={`${selectedScreenSize=='mobile'?'border border-primary':null} cursor-pointer`} onClick={()=>setSelectedScreenSize('mobile')}><TabletSmartphone/></Button>
+      </div>
 
-export default WebsiteDesign;
+
+        <div className='flex gap-2'> 
+            <Button className='cursor-pointer' variant={'outline'} onClick={()=>ViewInNewTab()}>View<SquareArrowOutUpRight/></Button>
+            <Button className='cursor-pointer'>View<Code2Icon/></Button>
+            <Button className='cursor-pointer'>Download<Download/></Button>
+        </div>
+
+    </div>
+  );
+}
+
+export default WebPageTools;

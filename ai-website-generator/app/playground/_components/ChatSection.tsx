@@ -13,7 +13,7 @@ const ChatSection = ({ messages, onSend, loading }: Props) => {
   const [input, setInput] = useState<string>("");
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
-  // 👇 Auto scroll to bottom when messages update
+
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
