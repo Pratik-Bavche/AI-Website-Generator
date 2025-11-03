@@ -77,6 +77,10 @@ const Playground = () => {
       const msg = result.data?.chatMessages[0].content;
       sendMessage(msg);
     }
+    else
+    {
+      setMessages(result.data?.chatMessages)
+    }
   };
 
   const sendMessage = async (userInput: string) => {
@@ -114,7 +118,6 @@ const Playground = () => {
         throw new Error("No response body received");
       }
 
-      console.log("Starting to read stream");
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
 
@@ -177,8 +180,22 @@ const Playground = () => {
   };
 
   useEffect(() => {
-    console.log("Generated Code:", generatedCode);
-  }, [generatedCode]);
+    if (messages.length > 0) {
+      SaveMessages();
+    }
+  }, [messages]);
+
+  const SaveMessages = async () => {
+    try {
+      const result = await axios.put('/api/chats', {
+        messages: messages,
+        frameId: frameId,
+      });
+      console.log("Messages saved:", result.data);
+    } catch (err) {
+      console.error("Error saving messages:", err);
+    }
+  };
 
   return (
     <div>
