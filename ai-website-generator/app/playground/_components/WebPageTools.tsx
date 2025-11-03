@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Code2Icon, Download, Monitor,SquareArrowOutUpRight, TabletSmartphone } from 'lucide-react';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import ViewCodeBlock from './ViewCodeBlock';
 
 const HTML_CODE=`<!DOCTYPE html>
       <html lang="en">
@@ -49,14 +50,30 @@ const HTML_CODE=`<!DOCTYPE html>
 
 const WebPageTools = ({selectedScreenSize,setSelectedScreenSize,generatedCode}:any) => {
 
+    const [finalCode,setFinalCode]=useState<string>();
+
+    useEffect(()=>{
+        const cleanCode=(HTML_CODE.replace('{code}',generatedCode)||'').replaceAll("```html",'').replace('```','').replaceAll('html','')
+        setFinalCode(cleanCode);
+    },[generatedCode])
+
     const ViewInNewTab=()=>{
-            if(!generatedCode) return;
-
-            const cleanCode=(HTML_CODE.replace('{code}',generatedCode)||'').replaceAll("```html",'').replace('```','').replace('html','')
-            const blob=new Blob([cleanCode],{type:'text/html'});
+            if(!finalCode) return;
+            const blob=new Blob([finalCode??''],{type:'text/html'});
             const url=URL.createObjectURL(blob);
-
             window.open(url,"_blank")
+    }
+
+    const downloadCode=()=>{
+        const blob=new Blob([finalCode??''],{type:'text/html'});
+        const url=URL.createObjectURL(blob);
+        const a=document.createElement('a')
+        a.href=url;
+        a.download='index.html'
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
     }
 
   return (
@@ -69,8 +86,10 @@ const WebPageTools = ({selectedScreenSize,setSelectedScreenSize,generatedCode}:a
 
         <div className='flex gap-2'> 
             <Button className='cursor-pointer' variant={'outline'} onClick={()=>ViewInNewTab()}>View<SquareArrowOutUpRight/></Button>
-            <Button className='cursor-pointer'>View<Code2Icon/></Button>
-            <Button className='cursor-pointer'>Download<Download/></Button>
+            <ViewCodeBlock code={finalCode}>
+                <Button className='cursor-pointer'>Code<Code2Icon/></Button>
+            </ViewCodeBlock>
+            <Button onClick={downloadCode} className='cursor-pointer'>Download<Download/></Button>
         </div>
 
     </div>
