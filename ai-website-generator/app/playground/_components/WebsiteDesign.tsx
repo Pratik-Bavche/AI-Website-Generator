@@ -7,8 +7,12 @@ type Props = {
 
 const WebsiteDesign = ({ generatedCode }: Props) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [selectedScreenSize,setSelectedScreenSize]=useState('web')
+  const [selectedScreenSize, setSelectedScreenSize] = useState("web");
+
+  // Clean & prepare code
   const cleanedCode = generatedCode.replace(/```html|```/g, "").trim();
+
+  // Function to fix duplicate IDs
   const fixDuplicateIds = (html: string) => {
     const idRegex = /id="([^"]+)"/g;
     const idMap = new Map<string, number>();
@@ -19,6 +23,7 @@ const WebsiteDesign = ({ generatedCode }: Props) => {
     });
   };
 
+  // Initialize iframe environment (only once)
   useEffect(() => {
     if (!iframeRef.current) return;
     const doc = iframeRef.current.contentDocument;
@@ -66,37 +71,100 @@ const WebsiteDesign = ({ generatedCode }: Props) => {
         <script src="https://unpkg.com/@popperjs/core@2"></script>
         <script src="https://unpkg.com/tippy.js@6"></script>
       </head>
-      <body id="root"></body>
+      <body id="root" style="margin:0; padding:0;"></body>
       </html>
     `);
     doc.close();
   }, []);
 
+  // Update the body with the generated HTML + enable hover/select editing
   useEffect(() => {
     if (!iframeRef.current) return;
     const doc = iframeRef.current.contentDocument;
     if (!doc) return;
     const root = doc.getElementById("root");
+    if (!root) return;
 
-    if (root) {
-      const fixedHTML = fixDuplicateIds(cleanedCode);
-      root.innerHTML = fixedHTML || "";
-    }
+    const fixedHTML = fixDuplicateIds(cleanedCode);
+    root.innerHTML = fixedHTML || "";
+
+    let hoverEl: HTMLElement | null = null;
+    let selectedEl: HTMLElement | null = null;
+
+    const handleMouseOver = (e: MouseEvent) => {
+      if (selectedEl) return;
+      const target = e.target as HTMLElement;
+      if (hoverEl && hoverEl !== target) hoverEl.style.outline = "";
+      hoverEl = target;
+      hoverEl.style.outline = "2px dotted blue";
+    };
+
+    const handleMouseOut = () => {
+      if (selectedEl) return;
+      if (hoverEl) hoverEl.style.outline = "";
+      hoverEl = null;
+    };
+
+    const handleClick = (e: MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const target = e.target as HTMLElement;
+      if (selectedEl && selectedEl !== target) {
+        selectedEl.style.outline = "";
+        selectedEl.removeAttribute("contenteditable");
+      }
+
+      selectedEl = target;
+      selectedEl.style.outline = "2px solid red";
+      selectedEl.setAttribute("contenteditable", "true");
+      selectedEl.focus();
+
+      const handleBlur = () => {
+        if (selectedEl) {
+          selectedEl.style.outline = "";
+          selectedEl.removeAttribute("contenteditable");
+          console.log("Edited element:", selectedEl.outerHTML);
+        }
+      };
+
+      selectedEl.addEventListener("blur", handleBlur, { once: true });
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && selectedEl) {
+        selectedEl.style.outline = "";
+        selectedEl.removeAttribute("contenteditable");
+        selectedEl = null;
+      }
+    };
+
+    doc.body?.addEventListener("mouseover", handleMouseOver);
+    doc.body?.addEventListener("mouseout", handleMouseOut);
+    doc.body?.addEventListener("click", handleClick);
+    doc.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      doc.body?.removeEventListener("mouseover", handleMouseOver);
+      doc.body?.removeEventListener("mouseout", handleMouseOut);
+      doc.body?.removeEventListener("click", handleClick);
+      doc.removeEventListener("keydown", handleKeyDown);
+    };
   }, [cleanedCode]);
 
   return (
     <div className="p-5 w-full overflow-hidden flex items-center flex-col">
       <iframe
         ref={iframeRef}
-        className={`${selectedScreenSize=='web'?'w-full':'w-130'} h-[78vh] border rounded bg-white`}
+        className={`${selectedScreenSize === "web" ? "w-full" : "w-[430px]"} h-[78vh] border rounded bg-white`}
         sandbox="allow-scripts allow-same-origin"
       />
-      <WebPageTools selectedScreenSize={selectedScreenSize} 
-      setSelectedScreenSize={(v:string)=>setSelectedScreenSize(v)}
-      generatedCode={generatedCode}
+      <WebPageTools
+        selectedScreenSize={selectedScreenSize}
+        setSelectedScreenSize={(v: string) => setSelectedScreenSize(v)}
+        generatedCode={generatedCode}
       />
     </div>
-  
   );
 };
 
