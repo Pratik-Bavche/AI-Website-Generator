@@ -1,6 +1,6 @@
 import { db } from "@/config/db";
 import { chatTable, frameTable } from "@/config/schema";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from "@clerk/nextjs/server";
 
@@ -70,4 +70,12 @@ export async function POST(req: NextRequest) {
     console.error("Error saving chat message:", error);
     return NextResponse.json({ error: "Failed to save message" }, { status: 500 });
   }
+}
+
+export async function PUT(req:NextRequest) {
+  const {designCode,frameId,projectId}=await req.json();
+  const result=await db.update(frameTable).set({
+    designCode:designCode
+  }).where(and(eq(frameTable.frameId,frameId),eq(frameTable.projectId,projectId)))
+  return NextResponse.json({result:'Updated'})
 }
