@@ -6,6 +6,7 @@ import WebsiteDesign from "../_components/WebsiteDesign";
 import ElementSettingSection from "../_components/ElementSettingSection";
 import { useParams, useSearchParams } from "next/navigation";
 import axios from "axios";
+import { toast } from "sonner";
 
 export type Messages = {
   role: string;
@@ -69,54 +70,50 @@ const Playground = () => {
   }, [frameId]);
 
   const GetFrameDetails = async () => {
-    const result = await axios.get(
-      `/api/frames?frameId=${frameId}&projectId=${projectId}`
-    );
-    setFrameDetail(result.data);
-    if (result.data?.chatMessages?.length === 1) {
-      const msg = result.data?.chatMessages[0].content;
-      sendMessage(msg);
-    }
-    else
-    {
-      setMessages(result.data?.chatMessages)
+    try {
+      const result = await axios.get(
+        `/api/frames?frameId=${frameId}&projectId=${projectId}`
+      );
+      setFrameDetail(result.data);
+
+      const designCode=result.data?.designCode;
+      const startIndex = designCode.indexOf("```html") + 7;
+      const formattedCode = designCode.slice(startIndex);
+      setGeneratedCode(formattedCode)
+      
+      if (result.data?.chatMessages?.length === 1) {
+        const msg = result.data?.chatMessages[0].content;
+        sendMessage(msg);
+      } else {
+        setMessages(result.data?.chatMessages);
+      }
+    } catch (error) {
+      console.error("Error fetching frame details:", error);
     }
   };
 
   const sendMessage = async (userInput: string) => {
     setLoading(true);
-
-    setMessages((prev) => [
-      ...prev,
-      { role: "user", content: userInput },
-    ]);
+    setMessages((prev) => [...prev, { role: "user", content: userInput }]);
 
     try {
       const formattedPrompt = getPrompt(userInput);
-      console.log("Sending request to /api/ai-model");
-      
       const response = await fetch("/api/ai-model", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: [{ role: "user", content: formattedPrompt }],
         }),
       });
 
-      console.log("Response status:", response.status, response.ok);
-
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
-        console.error("API error response:", errorData);
+        const errorData = await response.json().catch(() => ({
+          error: "Unknown error",
+        }));
         throw new Error(errorData.error || `API error: ${response.status}`);
       }
 
-      if (!response.body) {
-        console.error("No response body received");
-        throw new Error("No response body received");
-      }
+      if (!response.body) throw new Error("No response body received");
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
@@ -124,39 +121,30 @@ const Playground = () => {
       let aiResponse = "";
       let isCode = false;
       let codeContent = "";
-      let chunkCount = 0;
 
       while (true) {
         const { done, value } = await reader.read();
-        if (done) {
-          console.log("Stream reading complete. Total chunks:", chunkCount);
-          break;
-        }
-        
-        chunkCount++;
+        if (done) break;
+
         const chunk = decoder.decode(value, { stream: true });
         aiResponse += chunk;
 
         if (!isCode && aiResponse.includes("```html")) {
-          console.log("Found code marker");
           isCode = true;
           const startIndex = aiResponse.indexOf("```html") + 7;
-          const contentAfterMarker = aiResponse.slice(startIndex);
-          codeContent = contentAfterMarker;
+          codeContent = aiResponse.slice(startIndex);
           setGeneratedCode(codeContent);
         } else if (isCode) {
           codeContent += chunk;
           setGeneratedCode(codeContent);
         }
       }
-      
-      console.log("Final aiResponse length:", aiResponse.length, "isCode:", isCode);
-
+      await SaveGeneratedCode(aiResponse);
       if (isCode) {
         const endIndex = codeContent.indexOf("```");
-        const finalCode = endIndex !== -1 ? codeContent.slice(0, endIndex) : codeContent;
+        const finalCode =
+          endIndex !== -1 ? codeContent.slice(0, endIndex) : codeContent;
         setGeneratedCode(finalCode.trim());
-        
         setMessages((prev) => [
           ...prev,
           { role: "assistant", content: "Your code is ready!" },
@@ -169,12 +157,14 @@ const Playground = () => {
       }
     } catch (error) {
       console.error("Error sending message:", error);
-      const errorMessage = error instanceof Error ? error.message : "Something went wrong";
+      const errorMessage =
+        error instanceof Error ? error.message : "Something went wrong";
       setMessages((prev) => [
         ...prev,
         { role: "assistant", content: `Error: ${errorMessage}` },
       ]);
     } finally {
+      
       setLoading(false);
     }
   };
@@ -187,13 +177,27 @@ const Playground = () => {
 
   const SaveMessages = async () => {
     try {
-      const result = await axios.put('/api/chats', {
+      const result = await axios.put("/api/chats", {
         messages: messages,
         frameId: frameId,
       });
       console.log("Messages saved:", result.data);
     } catch (err) {
       console.error("Error saving messages:", err);
+    }
+  };
+
+  const SaveGeneratedCode = async (code:string) => {
+    try {
+      const result = await axios.put("/api/frames", {
+        designCode: code,
+        frameId: frameId,
+        projectId: projectId,
+      });
+      console.log(result.data);
+      toast.success("Website is ready!");
+    } catch (error) {
+      console.error("Error saving code:", error);
     }
   };
 
@@ -206,7 +210,7 @@ const Playground = () => {
           messages={messages}
           onSend={(input: string) => sendMessage(input)}
         />
-        <WebsiteDesign generatedCode={generatedCode}/>
+        <WebsiteDesign generatedCode={generatedCode} />
       </div>
     </div>
   );

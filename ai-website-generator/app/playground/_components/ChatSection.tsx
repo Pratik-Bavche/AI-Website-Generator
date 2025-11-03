@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Messages } from "../[projectId]/page";
 import { Button } from "@/components/ui/button";
 import { ArrowUp } from "lucide-react";
@@ -11,6 +11,14 @@ type Props = {
 
 const ChatSection = ({ messages, onSend, loading }: Props) => {
   const [input, setInput] = useState<string>("");
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  // 👇 Auto scroll to bottom when messages update
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, loading]);
 
   const handleSet = () => {
     if (!input.trim()) return;
@@ -57,10 +65,12 @@ const ChatSection = ({ messages, onSend, loading }: Props) => {
           <div className="flex justify-center items-center p-4">
             <div className="flex items-center gap-2 text-gray-600 text-sm">
               <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-blue-600" />
-                Working on your request...
+              Working on your request...
             </div>
           </div>
         )}
+  
+        <div ref={messagesEndRef} />
       </div>
 
       <div className="p-4 border-t border-gray-200 bg-white">

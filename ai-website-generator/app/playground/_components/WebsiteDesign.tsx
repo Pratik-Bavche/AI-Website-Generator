@@ -5,8 +5,11 @@ type Props = {
 };
 
 const WebsiteDesign = ({ generatedCode }: Props) => {
+
+  const cleanedCode = generatedCode.replace(/```html|```/g, "").trim();
+
   return (
-    <div className="flex-1 p-4 h-[91vh] overflow-auto bg-white dark:bg-gray-900">
+    <div className="flex-1 p-4 h-[91vh] overflow-auto bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700">
       <div
         dangerouslySetInnerHTML={{
           __html: `
@@ -56,7 +59,7 @@ const WebsiteDesign = ({ generatedCode }: Props) => {
 </head>
 
 <body class="bg-gray-50 dark:bg-gray-900">
-${generatedCode}
+${cleanedCode}
 </body>
 </html>
 `,
