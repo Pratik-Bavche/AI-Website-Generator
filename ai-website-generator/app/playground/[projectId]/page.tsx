@@ -206,7 +206,7 @@ const Playground = () => {
           messages={messages}
           onSend={(input: string) => sendMessage(input)}
         />
-        <WebsiteDesign />
+        <WebsiteDesign generatedCode={generatedCode}/>
       </div>
     </div>
   );
