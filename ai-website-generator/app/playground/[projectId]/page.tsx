@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react";
 import PlaygroundHeader from "../_components/PlaygroundHeader";
 import ChatSection from "../_components/ChatSection";
 import WebsiteDesign from "../_components/WebsiteDesign";
-import ElementSettingSection from "../_components/ElementSettingSection";
 import { useParams, useSearchParams } from "next/navigation";
 import axios from "axios";
 import { toast } from "sonner";
@@ -76,11 +75,11 @@ const Playground = () => {
       );
       setFrameDetail(result.data);
 
-      const designCode=result.data?.designCode;
+      const designCode = result.data?.designCode;
       const startIndex = designCode.indexOf("```html") + 7;
       const formattedCode = designCode.slice(startIndex);
-      setGeneratedCode(formattedCode)
-      
+      setGeneratedCode(formattedCode);
+
       if (result.data?.chatMessages?.length === 1) {
         const msg = result.data?.chatMessages[0].content;
         sendMessage(msg);
@@ -139,7 +138,9 @@ const Playground = () => {
           setGeneratedCode(codeContent);
         }
       }
+
       await SaveGeneratedCode(aiResponse);
+
       if (isCode) {
         const endIndex = codeContent.indexOf("```");
         const finalCode =
@@ -164,7 +165,6 @@ const Playground = () => {
         { role: "assistant", content: `Error: ${errorMessage}` },
       ]);
     } finally {
-      
       setLoading(false);
     }
   };
@@ -187,7 +187,7 @@ const Playground = () => {
     }
   };
 
-  const SaveGeneratedCode = async (code:string) => {
+  const SaveGeneratedCode = async (code: string) => {
     try {
       const result = await axios.put("/api/frames", {
         designCode: code,
@@ -202,15 +202,17 @@ const Playground = () => {
   };
 
   return (
-    <div>
+    <div className="flex flex-col h-screen overflow-hidden">
       <PlaygroundHeader />
-      <div className="flex">
+      <div className="flex flex-1 overflow-hidden">
         <ChatSection
           loading={loading}
           messages={messages}
           onSend={(input: string) => sendMessage(input)}
         />
-        <WebsiteDesign generatedCode={generatedCode} />
+        <div className="flex-1 overflow-auto">
+          <WebsiteDesign generatedCode={generatedCode} />
+        </div>
       </div>
     </div>
   );
