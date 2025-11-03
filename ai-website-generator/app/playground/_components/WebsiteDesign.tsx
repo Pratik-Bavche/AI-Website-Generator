@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import WebPageTools from "./WebPageTools";
+import ElementSettingSection from "./ElementSettingSection";
 
 type Props = {
   generatedCode: string;
@@ -8,6 +9,7 @@ type Props = {
 const WebsiteDesign = ({ generatedCode }: Props) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [selectedScreenSize, setSelectedScreenSize] = useState("web");
+  const [selectedElement, setSelectedElement] = useState<HTMLElement|null>();
 
   // Clean & prepare code
   const cleanedCode = generatedCode.replace(/```html|```/g, "").trim();
@@ -119,7 +121,7 @@ const WebsiteDesign = ({ generatedCode }: Props) => {
       selectedEl.style.outline = "2px solid red";
       selectedEl.setAttribute("contenteditable", "true");
       selectedEl.focus();
-
+      setSelectedElement(selectedEl)
       const handleBlur = () => {
         if (selectedEl) {
           selectedEl.style.outline = "";
@@ -153,17 +155,21 @@ const WebsiteDesign = ({ generatedCode }: Props) => {
   }, [cleanedCode]);
 
   return (
-    <div className="p-5 w-full overflow-hidden flex items-center flex-col">
-      <iframe
-        ref={iframeRef}
-        className={`${selectedScreenSize === "web" ? "w-full" : "w-[430px]"} h-[78vh] border rounded bg-white`}
-        sandbox="allow-scripts allow-same-origin"
-      />
-      <WebPageTools
-        selectedScreenSize={selectedScreenSize}
-        setSelectedScreenSize={(v: string) => setSelectedScreenSize(v)}
-        generatedCode={generatedCode}
-      />
+    <div className="flex gap-2 w-full">
+        <div className="p-5 w-full overflow-hidden flex items-center flex-col">
+          <iframe
+            ref={iframeRef}
+            className={`${selectedScreenSize === "web" ? "w-full" : "w-[430px]"} h-[78vh] border rounded bg-white`}
+            sandbox="allow-scripts allow-same-origin"
+          />
+          <WebPageTools
+            selectedScreenSize={selectedScreenSize}
+            setSelectedScreenSize={(v: string) => setSelectedScreenSize(v)}
+            generatedCode={generatedCode}
+          />
+        </div>
+        {/* @ts-ignore */}
+        <ElementSettingSection selectedEl={selectedElement} clearSelection={()=>setSelectedElement(null)}/>
     </div>
   );
 };
