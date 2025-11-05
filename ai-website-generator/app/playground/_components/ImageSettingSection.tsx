@@ -1,5 +1,4 @@
 "use client";
-import ImageKit from "imagekit";
 import React, { useRef, useState } from "react";
 import {
   Image as ImageIcon,
@@ -30,12 +29,6 @@ const transformOptions = [
   { label: "Upscale", value: "upscale", icon: <ImageUpscale />, transformation: "e-upscale" },
   { label: "BG Remove", value: "bgremove", icon: <ImageMinus />, transformation: "e-bgremove" },
 ];
-
-const imagekit = new ImageKit({
-  publicKey: process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY!,
-  privateKey: process.env.NEXT_PUBLIC_IMAGEKIT_PRIVATE_KEY!,
-  urlEndpoint: process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT!,
-});
 
 function ImageSettingSection({ selectedEl }: Props) {
   const [altText, setAltText] = useState(selectedEl?.alt || "");
@@ -69,59 +62,60 @@ function ImageSettingSection({ selectedEl }: Props) {
     }
   };
 
-
+  
   const saveUploadedFile = async () => {
-    if (selectedImage) {
-      setLoading(true);
-      try {
-        // Convert to base64
-        const toBase64 = (file: File) =>
-          new Promise<string>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => resolve(reader.result as string);
-            reader.onerror = (error) => reject(error);
-          });
+    if (!selectedImage) return toast.error("Please select an image first.");
+    setLoading(true);
+    try {
+   
+      const res = await fetch("/api/imagekit-auth");
+      const auth = await res.json();
 
-        const base64File = await toBase64(selectedImage);
+ 
+      const formData = new FormData();
+      formData.append("file", selectedImage);
+      formData.append("fileName", Date.now() + ".png");
+      formData.append("publicKey", process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY!);
+      formData.append("signature", auth.signature);
+      formData.append("expire", auth.expire);
+      formData.append("token", auth.token);
 
-        const imageRef = await imagekit.upload({
-          file: base64File,
-          fileName: Date.now() + ".png",
-          isPublished: true,
-        });
+   
+      const uploadRes = await fetch("https://upload.imagekit.io/api/v1/files/upload", {
+        method: "POST",
+        body: formData,
+      });
 
-        console.log("Uploaded:", imageRef);
+      const data = await uploadRes.json();
 
-        selectedEl.setAttribute("src", imageRef?.url + "?tr=");
-        setPreview(imageRef?.url);
+      if (uploadRes.ok) {
+        selectedEl.setAttribute("src", data.url + "?tr=");
+        setPreview(data.url);
         toast.success("Image uploaded successfully!");
-      } catch (error) {
-        console.error("Upload error:", error);
-        toast.error("Upload failed. Please try again.");
-      } finally {
-        setLoading(false);
+      } else {
+        toast.error(data.message || "Upload failed.");
       }
-    } else {
-      toast.error("Please select an image first.");
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast.error("Upload failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
   // Open File Dialog
-  const openFileDialog = () => {
-    fileInputRef.current?.click();
-  };
+  const openFileDialog = () => fileInputRef.current?.click();
 
   const GenerateAiImage = () => {
     setLoading(true);
     const url = `https://ik.imagekit.io/fw7bitjdh/ik-genimg-prompt-${altText}/${Date.now()}.png?tr=`;
     setPreview(url);
     selectedEl.setAttribute("src", url);
+    setLoading(false);
   };
 
   const ApplyTransformation = (trValue: string) => {
     setLoading(true);
-
     if (!preview.includes(trValue)) {
       const url = preview + trValue + ",";
       setPreview(url);
@@ -147,7 +141,6 @@ function ImageSettingSection({ selectedEl }: Props) {
           alt={altText}
           className="max-h-40 object-contain border rounded cursor-pointer hover:opacity-80"
           onClick={openFileDialog}
-          onLoad={() => setLoading(false)}
         />
       </div>
 
@@ -213,36 +206,6 @@ function ImageSettingSection({ selectedEl }: Props) {
           </TooltipProvider>
         </div>
       </div>
-
-      {/* Conditional Resize Inputs */}
-      {activeTransforms.includes("resize") && (
-        <div className="flex gap-2">
-          <div className="flex-1">
-            <Label className="text-sm">Width</Label>
-            <Input
-              type="number"
-              value={width}
-              onChange={(e) => {
-                setWidth(Number(e.target.value));
-                selectedEl.width = Number(e.target.value);
-              }}
-              className="mt-1"
-            />
-          </div>
-          <div className="flex-1">
-            <Label className="text-sm">Height</Label>
-            <Input
-              type="number"
-              value={height}
-              onChange={(e) => {
-                setHeight(Number(e.target.value));
-                selectedEl.height = Number(e.target.value);
-              }}
-              className="mt-1"
-            />
-          </div>
-        </div>
-      )}
 
       {/* Border Radius */}
       <div>
