@@ -73,18 +73,35 @@ const Playground = () => {
       const result = await axios.get(
         `/api/frames?frameId=${frameId}&projectId=${projectId}`
       );
-      setFrameDetail(result.data);
 
-      const designCode = result.data?.designCode;
-      const startIndex = designCode.indexOf("```html") + 7;
-      const formattedCode = designCode.slice(startIndex);
-      setGeneratedCode(formattedCode);
+      if (!result?.data) {
+        console.error("No frame data found.");
+        return;
+      }
 
-      if (result.data?.chatMessages?.length === 1) {
-        const msg = result.data?.chatMessages[0].content;
+      const data = result.data;
+      setFrameDetail(data);
+
+      const designCode = data?.designCode || "";
+
+      if (designCode && designCode.includes("```html")) {
+        const startIndex = designCode.indexOf("```html") + 7;
+        const endIndex = designCode.lastIndexOf("```");
+        const formattedCode =
+          endIndex > startIndex
+            ? designCode.slice(startIndex, endIndex)
+            : designCode.slice(startIndex);
+        setGeneratedCode(formattedCode.trim());
+      } else {
+        setGeneratedCode(designCode.trim());
+      }
+
+      // if only one message — auto-generate response
+      if (data?.chatMessages?.length === 1) {
+        const msg = data.chatMessages[0].content;
         sendMessage(msg);
       } else {
-        setMessages(result.data?.chatMessages);
+        setMessages(data?.chatMessages || []);
       }
     } catch (error) {
       console.error("Error fetching frame details:", error);
@@ -210,7 +227,7 @@ const Playground = () => {
           messages={messages}
           onSend={(input: string) => sendMessage(input)}
         />
-        <div className="flex-1 overflow-auto">
+        <div className="flex-1 overflow-hidden">
           <WebsiteDesign generatedCode={generatedCode} />
         </div>
       </div>
