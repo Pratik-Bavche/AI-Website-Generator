@@ -4,11 +4,13 @@ import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { useUser } from "@clerk/nextjs";
 import { UserDetailContext } from "@/context/UserDetailContext";
+import { OnSaveContext } from "@/context/OnSaveContext";
 
 
 const Provider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useUser();
-  const [userDetail, setUserDetail] = useState<any>(null);
+  const [userDetail, setUserDetail] = useState<any>();
+  const [onSaveData, setOnsaveData] = useState<any>(null);
   const hasAttempted = useRef(false);
 
   useEffect(() => {
@@ -34,7 +36,9 @@ const Provider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <UserDetailContext.Provider value={{ userDetail, setUserDetail }}>
-      {children}
+      <OnSaveContext.Provider value={{onSaveData, setOnsaveData}}>
+        {children}
+      </OnSaveContext.Provider>
     </UserDetailContext.Provider>
   );
 };

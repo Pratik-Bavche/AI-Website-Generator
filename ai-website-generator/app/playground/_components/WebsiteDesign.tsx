@@ -1,17 +1,25 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import WebPageTools from "./WebPageTools";
 import ElementSettingSection from "./ElementSettingSection";
 import ImageSettingSection from "./ImageSettingSection";
+import { OnSaveContext } from "@/context/OnSaveContext";
+import axios from "axios";
+import { toast } from "sonner";
+import { useParams, useSearchParams } from "next/navigation";
 
 type Props = {
   generatedCode: string;
 };
 
 const WebsiteDesign = ({ generatedCode }: Props) => {
+  const {projectId} = useParams();
+  const searchParams = useSearchParams();
+  const frameId = searchParams.get("frameId");
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [selectedScreenSize, setSelectedScreenSize] = useState("web");
   const [selectedElement, setSelectedElement] = useState<HTMLElement | null>(null);
+  const {onSaveData, setOnsaveData}=useContext(OnSaveContext);
 
   // Clean code
   const cleanedCode = generatedCode.replace(/```html|```/g, "").trim();
@@ -124,6 +132,48 @@ const WebsiteDesign = ({ generatedCode }: Props) => {
       doc.removeEventListener("keydown", handleKeyDown);
     };
   }, [cleanedCode]);
+
+  useEffect(()=>{
+   onSaveData && onSaveCode()
+  },[onSaveData])
+
+
+  const onSaveCode = async() => {
+      if (iframeRef.current) {
+        try {
+          const iframeDoc =
+            iframeRef.current.contentDocument ||
+            iframeRef.current.contentWindow?.document;
+
+          if (iframeDoc) {
+            const cloneDoc = iframeDoc.documentElement.cloneNode(true) as HTMLElement;
+
+            // Remove all outlines and cursors
+            const allEls = cloneDoc.querySelectorAll<HTMLElement>("*");
+            allEls.forEach((el) => {
+              el.style.outline = "";
+              el.style.cursor = "";
+            });
+
+            const html=cloneDoc.outerHTML;
+            console.log("HTML to save",html);
+
+
+            const result = await axios.put("/api/frames", {
+              designCode: html,
+              frameId: frameId,
+              projectId: projectId,
+            });
+            console.log(result.data);
+            toast.success("Saved!");
+
+          }
+        } catch (err) {
+          console.log("Error while saving code:", err);
+        }
+      }
+    };
+
 
   return (
     <div className="flex gap-2 w-full">

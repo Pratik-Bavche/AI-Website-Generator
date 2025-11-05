@@ -56,8 +56,8 @@ Example:
 const Playground = () => {
   const params = useParams();
   const searchParams = useSearchParams();
-  const projectId = params.projectId as string;
   const frameId = searchParams.get("frameId");
+  const projectId = params.projectId as string;
 
   const [frameDetail, setFrameDetail] = useState<Frame>();
   const [loading, setLoading] = useState(false);

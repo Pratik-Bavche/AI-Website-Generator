@@ -1,8 +1,10 @@
 import { Button } from '@/components/ui/button';
+import { OnSaveContext } from '@/context/OnSaveContext';
 import Image from 'next/image';
-import React from 'react';
+import React, { useContext } from 'react';
 
 const PlaygroundHeader = () => {
+  const {onSaveData, setOnsaveData}=useContext(OnSaveContext);
   return (
     <div className="flex justify-between items-center p-4 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-sm">
       {/* Logo and Title */}
@@ -23,7 +25,7 @@ const PlaygroundHeader = () => {
       {/* Styled Save Button */}
       <Button
         className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg transition-all duration-300 cursor-pointer shadow hover:shadow-md"
-      >
+     onClick={()=>setOnsaveData(Date.now())} >
         Save
       </Button>
     </div>
