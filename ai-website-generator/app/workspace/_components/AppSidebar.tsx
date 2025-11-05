@@ -4,7 +4,7 @@ import { useContext, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { PlusIcon } from "lucide-react";
-import { UserButton } from "@clerk/nextjs";
+import { useAuth, UserButton } from "@clerk/nextjs";
 
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -25,10 +25,12 @@ export function AppSidebar() {
   const [projectList, setProjectList] = useState<any[]>([]);
   const { userDetail } = useContext(UserDetailContext);
   const [loading, setLoading] = useState(false);
-
+  const {has}=useAuth();
   useEffect(() => {
     GetProjectList();
   }, []); 
+
+  const hasUnlimitedAccess = has&&has({ plan: 'unlimited' })
 
   const GetProjectList = async () => {
     try {
@@ -82,7 +84,7 @@ export function AppSidebar() {
                       key={index}
                       className="my-2 hover:bg-secondary p-2 rounded-lg cursor-pointer block"
                     >
-                      <h2 className="line-clamp-1 p-1">{title}</h2>
+                      <h2 className="line-clamp-1">{title}</h2>
                     </Link>
                   );
                 })
@@ -97,16 +99,17 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter>
-        <div className="p-3 border rounded-xl space-y-3 bg-secondary">
+       {!hasUnlimitedAccess && <div className="p-3 border rounded-xl space-y-3 bg-secondary">
           <h2 className="flex justify-between items-center">
             Remaining credits:
             <span className="font-bold">{userDetail?.credits ?? 0}</span>
           </h2>
 
-          <Progress value={33} />
-
+          <Progress value={(userDetail?.credits/2)*100} />
+          <Link href={'/workspace/pricing'} className="w-full">
           <Button className="w-full cursor-pointer">Upgrade to Unlimited</Button>
-        </div>
+          </Link>
+        </div>}
 
         <div className="mt-1 flex items-center gap-2">
           <UserButton />
