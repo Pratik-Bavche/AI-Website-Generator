@@ -219,7 +219,7 @@ const ElementSettingSection = ({ selectedEl, clearSelection }: Props) => {
       {/* Reset Button */}
       <Button
         variant="destructive"
-        className="mt-6 w-full flex items-center gap-2"
+        className="mt-6 w-full flex items-center gap-2 cursor-pointer"
         onClick={resetStyles}
       >
         <Trash2 size={18} /> Reset Styles

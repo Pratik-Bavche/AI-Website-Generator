@@ -107,11 +107,24 @@ function ImageSettingSection({ selectedEl }: Props) {
   const openFileDialog = () => fileInputRef.current?.click();
 
   const GenerateAiImage = () => {
+    if (!altText.trim()) {
+      toast.error("Please enter alt text to generate an image.");
+      return;
+    }
     setLoading(true);
     const url = `https://ik.imagekit.io/fw7bitjdh/ik-genimg-prompt-${altText}/${Date.now()}.png?tr=`;
-    setPreview(url);
-    selectedEl.setAttribute("src", url);
-    setLoading(false);
+    const img = new Image();
+    img.onload = () => {
+      setPreview(url);
+      selectedEl.setAttribute("src", url);
+      setLoading(false);
+      toast.success("AI Image generated successfully!");
+    };
+    img.onerror = () => {
+      setLoading(false);
+      toast.error("Failed to generate AI image. Please try again.");
+    };
+    img.src = url;
   };
 
   const ApplyTransformation = (trValue: string) => {
@@ -154,7 +167,7 @@ function ImageSettingSection({ selectedEl }: Props) {
       />
 
       {/* Upload Button */}
-      <Button type="button" variant="outline" className="w-full" onClick={saveUploadedFile} disabled={loading}>
+      <Button type="button" variant="outline" className="w-full cursor-pointer" onClick={saveUploadedFile} disabled={loading}>
         {loading && <Loader2Icon className="animate-spin" />} Upload Image
       </Button>
 
@@ -174,7 +187,7 @@ function ImageSettingSection({ selectedEl }: Props) {
       </div>
 
       {/* Generate AI Image Button */}
-      <Button className="w-full" disabled={loading} onClick={GenerateAiImage}>
+      <Button className="w-full cursor-pointer" disabled={loading} onClick={GenerateAiImage}>
         {loading && <Loader2Icon className="animate-spin" />} Generate AI Image
       </Button>
 
@@ -191,7 +204,7 @@ function ImageSettingSection({ selectedEl }: Props) {
                     <Button
                       type="button"
                       variant={preview.includes(opt.transformation) ? "default" : "outline"}
-                      className="flex items-center justify-center p-2"
+                      className="flex items-center justify-center p-2 cursor-pointer"
                       onClick={() => ApplyTransformation(opt.transformation)}
                     >
                       {opt.icon}

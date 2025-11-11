@@ -18,6 +18,12 @@ export async function POST(req:NextRequest) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
         }
 
+        // Validate and parse credits
+        const parsedCredits = typeof credits === 'number' ? credits : parseInt(credits, 10);
+        if (isNaN(parsedCredits)) {
+            return NextResponse.json({ error: "Invalid credits value" }, { status: 400 });
+        }
+
         //create project
         const projectResult=await db.insert(projectTable).values({
             projectId:projectId,
@@ -41,7 +47,7 @@ export async function POST(req:NextRequest) {
         if(!hasUnlimitedAccess)
         {
             const userResult=await db.update(usersTable).set({
-                credits:credits-1
+                credits:parsedCredits-1
                 //@ts-ignore
             }).where(eq(usersTable.email,user?.primaryEmailAddress?.emailAddress))
         }

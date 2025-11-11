@@ -1,6 +1,8 @@
 import { Button } from '@/components/ui/button';
 import { OnSaveContext } from '@/context/OnSaveContext';
 import Image from 'next/image';
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 import React, { useContext } from 'react';
 
 const PlaygroundHeader = () => {
@@ -22,12 +24,26 @@ const PlaygroundHeader = () => {
         </h2>
       </div>
 
-      {/* Styled Save Button */}
-      <Button
-        className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg transition-all duration-300 cursor-pointer shadow hover:shadow-md"
-     onClick={()=>setOnsaveData(Date.now())} >
-        Save
-      </Button>
+      {/* Action Buttons */}
+      <div className="flex gap-3 items-center">
+        {/* Back to Workspace Button */}
+        <Link href="/workspace">
+          <Button
+            variant="outline"
+            className="flex items-center gap-2 cursor-pointer border-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+          >
+            <ArrowLeft size={18} /> Workspace
+          </Button>
+        </Link>
+
+        {/* Styled Save Button */}
+        <Button
+          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg transition-all duration-300 cursor-pointer shadow hover:shadow-md"
+          onClick={()=>setOnsaveData(Date.now())}
+        >
+          Save
+        </Button>
+      </div>
     </div>
   );
 };

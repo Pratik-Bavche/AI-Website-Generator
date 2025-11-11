@@ -39,7 +39,7 @@ const WebPageTools = ({
       {/* View size toggle */}
       <button
         onClick={() => setSelectedScreenSize("web")}
-        className={`px-4 py-2 rounded-md flex items-center gap-2 text-sm font-medium transition ${
+        className={`px-4 py-2 rounded-md flex items-center gap-2 text-sm font-medium transition cursor-pointer ${
           selectedScreenSize === "web"
             ? "bg-blue-600 text-white"
             : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -50,7 +50,7 @@ const WebPageTools = ({
 
       <button
         onClick={() => setSelectedScreenSize("mobile")}
-        className={`px-4 py-2 rounded-md flex items-center gap-2 text-sm font-medium transition ${
+        className={`px-4 py-2 rounded-md flex items-center gap-2 text-sm font-medium transition cursor-pointer ${
           selectedScreenSize === "mobile"
             ? "bg-blue-600 text-white"
             : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -62,7 +62,7 @@ const WebPageTools = ({
       {/* View Website */}
       <button
         onClick={openInNewTab}
-        className="px-4 py-2 bg-green-600 text-white rounded-md flex items-center gap-2 text-sm hover:bg-green-700 transition"
+        className="px-4 py-2 bg-green-600 text-white rounded-md flex items-center gap-2 text-sm hover:bg-green-700 transition cursor-pointer"
       >
         <Eye className="w-4 h-4" /> View Website
       </button>
@@ -78,7 +78,7 @@ const WebPageTools = ({
       {/* Download */}
       <button
         onClick={downloadCode}
-        className="px-4 py-2 bg-gray-800 text-white rounded-md flex items-center gap-2 text-sm hover:bg-gray-900 transition"
+        className="px-4 py-2 bg-gray-800 text-white rounded-md flex items-center gap-2 text-sm hover:bg-gray-900 transition cursor-pointer"
       >
         <Download className="w-4 h-4" /> Download
       </button>
