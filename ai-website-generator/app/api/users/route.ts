@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     const data = {
       name: user.fullName ?? "NA",
       email,
-      credits: 2,
+      credits: 5,
     };
 
     const [newUser] = await db.insert(usersTable).values(data).returning();
