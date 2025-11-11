@@ -93,7 +93,14 @@ const Hero = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[80vh] px-4">
+    <div className="flex flex-col items-center justify-center min-h-[80vh] px-4 relative">
+      {/* Loading Overlay */}
+      {loading && (
+        <div className="absolute inset-0 bg-white bg-opacity-70 flex flex-col items-center justify-center z-10">
+          <Loader className="animate-spin w-10 h-10 mb-2" />
+          <span className="text-lg font-medium">Loading, please wait...</span>
+        </div>
+      )}
       {/* Header & Description */}
       <h2 className="font-bold text-6xl text-center">What should we design</h2>
       <p className="mt-2 text-lg text-gray-500 text-center">
@@ -107,9 +114,10 @@ const Hero = () => {
           placeholder="Describe your page design"
           value={userInput}
           className="w-full h-28 p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-300 resize-none"
+          disabled={loading}
         ></textarea>
         <div className="flex justify-between items-center mt-3">
-          <Button variant="ghost" className="cursor-pointer">
+          <Button variant="ghost" className="cursor-pointer" disabled={loading}>
             <ImagePlusIcon />
           </Button>
           {isSignedIn ? (
@@ -137,10 +145,11 @@ const Hero = () => {
       <div className="mt-6 flex flex-wrap justify-center gap-4">
         {suggestion.map((item, index) => (
           <Button
-            onClick={() => setUserInput(item.prompt)}
+            onClick={() => !loading && setUserInput(item.prompt)}
             key={index}
             variant="outline"
             className="flex items-center gap-2 cursor-pointer"
+            disabled={loading}
           >
             <item.icon className="w-4 h-4" />
             {item.label}
